@@ -81,29 +81,29 @@ struct SettingsView: View {
         HStack(spacing: 0) {
             sidebar
             Divider()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    Text(selection.pane.title)
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
-                        .padding(.horizontal, 28).padding(.top, 34).padding(.bottom, 4)
-                    Group {
-                        switch selection.pane {
-                        case .general: GeneralPane()
-                        case .appearance: AppearancePane()
-                        case .actions: ActionsPane()
-                        case .output: OutputPane()
-                        case .quality: QualityPane()
-                        case .automation: AutomationPane()
-                        case .engines: EnginesPane()
-                        case .about: AboutPane()
-                        }
+            // The title stays put and each pane's Form does its own (lazy) scrolling.
+            // Wrapping Forms in a ScrollView made SwiftUI lay out every row at once, which lagged.
+            VStack(alignment: .leading, spacing: 0) {
+                Text(selection.pane.title)
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .padding(.horizontal, 28).padding(.top, 34).padding(.bottom, 4)
+                Group {
+                    switch selection.pane {
+                    case .general: GeneralPane()
+                    case .appearance: AppearancePane()
+                    case .actions: ActionsPane()
+                    case .output: OutputPane()
+                    case .quality: QualityPane()
+                    case .automation: AutomationPane()
+                    case .engines: EnginesPane()
+                    case .about: AboutPane()
                     }
-                    .formStyle(.grouped)
-                    .scrollContentBackground(.hidden)
-                    .scrollDisabled(true)
                 }
+                .formStyle(.grouped)
+                .scrollContentBackground(.hidden)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(SwiftUI.Color(nsColor: .windowBackgroundColor))
         }
         .frame(minWidth: 780, minHeight: 600)
@@ -328,6 +328,13 @@ final class RingPreviewModel: ObservableObject {
 private struct ActionsPane: View {
     @EnvironmentObject var settings: SettingsStore
 
+    /// Every possible slice per kind, worked out once instead of on every redraw.
+    static let catalog: [(kind: FileKind, convert: [KQAction], tools: [KQAction])] =
+        [FileKind.image, .pdf, .document, .data, .ebook, .video, .audio, .archive, .subtitle, .office, .folder].map { kind in
+            let all = ActionCatalog.allActions(for: kind)
+            return (kind, all.convert, all.tools)
+        }
+
     var body: some View {
         Form {
             Section {
@@ -336,11 +343,11 @@ private struct ActionsPane: View {
                 Text(L("Right-click a format to move it; use the arrows to reorder tools. Formats marked with a dot need an engine."))
                     .font(.system(size: 11)).foregroundStyle(.secondary)
             }
-            ForEach([FileKind.image, .pdf, .document, .data, .ebook, .video, .audio, .archive, .subtitle, .office, .folder], id: \.self) { kind in
+            ForEach(Self.catalog, id: \.kind) { entry in
+                let kind = entry.kind
                 Section {
-                    let all = ActionCatalog.allActions(for: kind)
-                    let convert = all.convert
-                    let tools = all.tools
+                    let convert = entry.convert
+                    let tools = entry.tools
                     if !convert.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(L("Convert to"))
