@@ -8,12 +8,24 @@ struct GlassDisc: View {
 
     var body: some View {
         ZStack {
-            // Drawn shadow: SwiftUI's .shadow on an AppKit-backed blur would cast a square.
-            Circle()
-                .fill(.black.opacity(dark ? 0.5 : 0.28))
-                .blur(radius: 22)
-                .offset(y: 12)
-                .padding(6)
+            // Soft shadow as a radial gradient that fades to fully clear well inside its own
+            // frame. (A blurred circle gets clipped to its frame and leaves a straight edge;
+            // .shadow on the AppKit blur view casts a square.)
+            GeometryReader { geo in
+                let r = min(geo.size.width, geo.size.height) / 2
+                RadialGradient(
+                    // The disc covers up to 0.77 of this radius: clear inside, darkest at the rim.
+                    stops: [
+                        .init(color: .clear, location: 0.55),
+                        .init(color: .black.opacity(dark ? 0.42 : 0.22), location: 0.76),
+                        .init(color: .black.opacity(dark ? 0.16 : 0.08), location: 0.85),
+                        .init(color: .clear, location: 0.98),
+                    ],
+                    center: .center, startRadius: 0, endRadius: r * 1.3)
+                    .frame(width: r * 2.6, height: r * 2.6)
+                    .position(x: geo.size.width / 2, y: geo.size.height / 2 + r * 0.06)
+            }
+            .allowsHitTesting(false)
 
             base
                 .overlay(Circle().fill(theme.accent.opacity(dark ? 0.10 : 0.07)))

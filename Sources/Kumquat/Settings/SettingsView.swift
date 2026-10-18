@@ -335,55 +335,63 @@ private struct ActionsPane: View {
             return (kind, all.convert, all.tools)
         }
 
+    /// One kind of file at a time keeps the list short, which keeps scrolling smooth.
+    @State private var kind: FileKind = .image
+
     var body: some View {
+        let entry = Self.catalog.first { $0.kind == kind } ?? Self.catalog[0]
+        let accent = settings.theme.accent2
         Form {
             Section {
                 Text(L("Choose what appears on the ring for each kind of file. Fewer slices make bigger targets."))
                     .foregroundStyle(.secondary)
-                Text(L("Right-click a format to move it; use the arrows to reorder tools. Formats marked with a dot need an engine."))
-                    .font(.system(size: 11)).foregroundStyle(.secondary)
-            }
-            ForEach(Self.catalog, id: \.kind) { entry in
-                let kind = entry.kind
-                Section {
-                    let convert = entry.convert
-                    let tools = entry.tools
-                    if !convert.isEmpty {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(L("Convert to"))
-                            FlowChips(actions: convert)
-                        }
-                        .padding(.vertical, 2)
+                FlowLayout(spacing: 6) {
+                    ForEach(Self.catalog, id: \.kind) { item in
+                        chip(item.kind.title, selected: item.kind == kind) { kind = item.kind }
                     }
-                    let orderedTools = settings.ordered(tools)
-                    ForEach(Array(orderedTools.enumerated()), id: \.element.id) { index, action in
-                        if case .tool(let tool) = action {
-                            HStack(spacing: 8) {
-                                VStack(spacing: 0) {
-                                    Button { settings.move(action, by: -1, in: tools) } label: { Image(systemName: "chevron.up") }
-                                        .disabled(index == 0)
-                                    Button { settings.move(action, by: 1, in: tools) } label: { Image(systemName: "chevron.down") }
-                                        .disabled(index == orderedTools.count - 1)
-                                }
-                                .buttonStyle(.borderless)
-                                .font(.system(size: 9, weight: .bold))
-                                .help(L("Move this slice"))
-                                Toggle(isOn: Binding(get: { settings.isEnabled(action) }, set: { settings.setEnabled(action, $0) })) {
-                                    Label {
-                                        VStack(alignment: .leading, spacing: 1) {
-                                            Text(tool.title)
-                                            Text(tool.explanation).font(.system(size: 11)).foregroundStyle(.secondary)
-                                        }
-                                    } icon: {
-                                        Image(systemName: tool.symbol).foregroundStyle(settings.theme.accent2)
+                }
+                .padding(.vertical, 2)
+            }
+            Section {
+                if !entry.convert.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(L("Convert to"))
+                        FlowChips(actions: entry.convert)
+                    }
+                    .padding(.vertical, 2)
+                }
+                let tools = entry.tools
+                let orderedTools = settings.ordered(tools)
+                ForEach(Array(orderedTools.enumerated()), id: \.element.id) { index, action in
+                    if case .tool(let tool) = action {
+                        HStack(spacing: 8) {
+                            VStack(spacing: 0) {
+                                Button { settings.move(action, by: -1, in: tools) } label: { Image(systemName: "chevron.up") }
+                                    .disabled(index == 0)
+                                Button { settings.move(action, by: 1, in: tools) } label: { Image(systemName: "chevron.down") }
+                                    .disabled(index == orderedTools.count - 1)
+                            }
+                            .buttonStyle(.borderless)
+                            .font(.system(size: 9, weight: .bold))
+                            .help(L("Move this slice"))
+                            Toggle(isOn: Binding(get: { settings.isEnabled(action) }, set: { settings.setEnabled(action, $0) })) {
+                                Label {
+                                    VStack(alignment: .leading, spacing: 1) {
+                                        Text(tool.title)
+                                        Text(tool.explanation).font(.system(size: 11)).foregroundStyle(.secondary)
                                     }
+                                } icon: {
+                                    Image(systemName: tool.symbol).foregroundStyle(accent)
                                 }
                             }
                         }
                     }
-                } header: {
-                    Label(kind.title, systemImage: kind.symbol)
                 }
+            } header: {
+                Label(kind.title, systemImage: kind.symbol)
+            } footer: {
+                Text(L("Right-click a format to move it; use the arrows to reorder tools. Formats marked with a dot need an engine."))
+                    .font(.system(size: 11)).foregroundStyle(.secondary)
             }
         }
     }

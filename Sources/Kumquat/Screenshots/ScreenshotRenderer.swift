@@ -75,6 +75,17 @@ enum ScreenshotRenderer {
         var t = settings.theme
         t.glass = .snapshot
         save(ZStack { Wallpaper(); RingView(model: ring, theme: t) }, size: CGSize(width: 500, height: 500), to: dir.appendingPathComponent("ring-progress.png"))
+        // On a flat color, any square edge around the ring would show.
+        let plain = RingModel()
+        plain.load(files: [sample])
+        plain.shown = true
+        for scheme in [RingScheme.light, .dark] {
+            var st = settings.theme
+            st.glass = .solid
+            st.scheme = scheme
+            save(ZStack { SwiftUI.Color(white: 0.55); RingView(model: plain, theme: st) }, size: CGSize(width: 420, height: 420),
+                 to: dir.appendingPathComponent("ring-edge-\(scheme.rawValue).png"))
+        }
         print("Rendered UI into \(dir.path)")
     }
 

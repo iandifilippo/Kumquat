@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.2 — 2026-10-18
+
+- The ring is a perfect circle: no more faint square or line around it
+- Formats & Tools shows one kind of file at a time, so Settings scroll smoothly
+
 ## 1.0.1 — 2026-10-18
 
 - Settings scroll smoothly: Formats & Tools no longer lags
