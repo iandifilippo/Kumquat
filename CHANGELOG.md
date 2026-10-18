@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1 — 2026-10-18
+
+- Settings scroll smoothly: Formats & Tools no longer lags
+
 ## 1.0.0 — 2026-10-18
 
 First release.
