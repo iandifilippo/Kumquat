@@ -1,0 +1,28 @@
+name: Bug report
+description: Something didn't convert or the ring misbehaved
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you drag, which slice did you drop it on, and what did you expect?
+    validations:
+      required: true
+  - type: input
+    id: file
+    attributes:
+      label: File type
+      placeholder: e.g. HEIC from iPhone, scanned PDF, MOV from screen recording
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: e.g. 26.1
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Kumquat version
+      description: Settings → About

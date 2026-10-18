@@ -1,0 +1,20 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Swift version
+        run: swift --version
+      - name: Check translations
+        run: python3 scripts/check-translations.py
+      - name: Test
+        run: swift test
+      - name: Build app
+        run: UNIVERSAL=0 scripts/build-app.sh
