@@ -184,6 +184,8 @@
     ft_download: "Descargar",
     ft_issues: "Reportar un problema",
     ft_license: "Licencia MIT",
+    ft_privacy: "Política de privacidad",
+    ft_terms: "Términos de servicio",
     ft_small: "Kumquat es software libre y de código abierto para macOS 14 y posterior. Mac, macOS y Finder son marcas comerciales de Apple Inc."
   };
 

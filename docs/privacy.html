@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Privacy Policy · Kumquat</title>
+<link rel="icon" href="assets/icon.png">
+<style>
+:root { --bg:#fbf7f2; --ink:#2a211b; --muted:#76675b; --line:#ecdfd2; --accent:#e85d14; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root { --bg:#17120f; --ink:#f4ebe3; --muted:#b3a294; --line:#3a2f28; --accent:#ff8a3d; color-scheme: dark; } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.65 -apple-system, "SF Pro Text", Inter, system-ui, sans-serif;
+  padding: 48px max(16px, env(safe-area-inset-right)) 80px max(16px, env(safe-area-inset-left)); }
+main { max-width: 720px; margin: 0 auto; }
+a { color: var(--accent); }
+.top { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--ink); font-weight:700; margin-bottom:36px; }
+.top img { width:28px; height:28px; }
+h1 { font-size: 34px; line-height:1.15; margin: 0 0 6px; letter-spacing:-0.01em; }
+h2 { font-size: 20px; margin: 32px 0 8px; }
+.meta { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+hr { border:0; border-top:1px solid var(--line); margin: 48px 0; }
+ul { padding-left: 22px; }
+</style>
+</head>
+<body>
+<main>
+<a class="top" href="./"><img src="assets/icon.png" alt="">Kumquat</a>
+<h1>Privacy Policy</h1>
+<p class="meta">Last updated: October 18, 2026 · <a href="#es">Español</a></p>
+<p>Kumquat is a free, open-source macOS app. This policy explains what happens with your data when you use the app and this website. In short: your files never leave your Mac, and Kumquat collects nothing about you.</p>
+<h2>Your files</h2>
+<p>Every conversion and tool (including background removal and text recognition) runs locally on your Mac using Apple's frameworks, the tools macOS ships with, and optional engines you installed yourself (FFmpeg, LibreOffice, Ghostscript, WebP). Files are never uploaded anywhere. Results are saved where you choose in Settings.</p>
+<h2>What Kumquat does not do</h2>
+<ul>
+<li>No accounts, sign-ups or logins.</li>
+<li>No analytics, telemetry, crash reporting, advertising or tracking.</li>
+<li>No reading of your screen, keystrokes or clipboard. Kumquat watches the system drag pasteboard and modifier keys only to know when to show its ring, and puts recognized text on the clipboard only when you use Get Text.</li>
+</ul>
+<h2>The one network request: update checks</h2>
+<p>If "Check for updates automatically" is on (Settings → About), Kumquat asks GitHub's public API for the latest release version a few seconds after launch and then every few hours. The request contains no personal data, but like any web request it reaches GitHub from your IP address and is subject to <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub's Privacy Statement</a>. You can turn it off at any time. Updating, when you choose to, downloads the new version from GitHub.</p>
+<h2>Permissions</h2>
+<p>The ⌃⌥K shortcut asks macOS once for permission to read which files are selected in Finder. Kumquat uses it for nothing else. No Accessibility or Screen Recording permission is required.</p>
+<h2>Settings stored on your Mac</h2>
+<p>Your preferences and a short list of recent results are stored locally in macOS user defaults. You can remove them with <code>defaults delete io.github.iandifilippo.kumquat</code>.</p>
+<h2>This website</h2>
+<p>This site is hosted on GitHub Pages. It uses no cookies, analytics or trackers; it only remembers your language choice in your browser's local storage. GitHub may keep standard server logs as described in its Privacy Statement. Fonts are loaded from Google Fonts.</p>
+<h2>Children</h2>
+<p>Kumquat collects no personal information from anyone, including children.</p>
+<h2>Changes and contact</h2>
+<p>If this policy changes, the new version will be published here with a new date. Questions: open an issue at <a href="https://github.com/iandifilippo/Kumquat/issues">github.com/iandifilippo/Kumquat/issues</a>.</p>
+<hr>
+<h1 id="es">Política de privacidad</h1>
+<p class="meta">Última actualización: 18 de octubre de 2026</p>
+<p>Kumquat es una app gratuita y de código abierto para macOS. Tus archivos nunca salen de tu Mac y Kumquat no recopila nada sobre ti.</p>
+<ul>
+<li><b>Archivos:</b> todas las conversiones y herramientas (incluidos quitar fondo y reconocer texto) se hacen en tu Mac. Nada se sube a internet.</li>
+<li><b>Sin cuentas, analíticas, publicidad ni rastreo.</b> Kumquat no lee tu pantalla ni lo que escribes; solo observa el arrastre del sistema y las teclas modificadoras para mostrar el anillo.</li>
+<li><b>Única conexión:</b> si la búsqueda automática de actualizaciones está activada, Kumquat pregunta a la API pública de GitHub por la última versión. No envía datos personales; se rige por la <a href="https://docs.github.com/es/site-policy/privacy-policies/github-general-privacy-statement">declaración de privacidad de GitHub</a>. Puedes desactivarla en Ajustes → Acerca de.</li>
+<li><b>Permisos:</b> el atajo ⌃⌥K pide una vez permiso para leer la selección de Finder. No hace falta Accesibilidad ni Grabación de pantalla.</li>
+<li><b>Ajustes:</b> se guardan solo en tu Mac.</li>
+<li><b>Este sitio:</b> alojado en GitHub Pages, sin cookies ni analíticas; solo recuerda tu idioma en tu navegador.</li>
+</ul>
+<p>Dudas: <a href="https://github.com/iandifilippo/Kumquat/issues">github.com/iandifilippo/Kumquat/issues</a>.</p>
+
+</main>
+</body>
+</html>
