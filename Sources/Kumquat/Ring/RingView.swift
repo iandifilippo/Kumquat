@@ -53,11 +53,13 @@ struct RingView: View {
             hub
             if showsHint, model.progress == nil { hint.offset(y: geo.outerRadius + 16 * scale) }
         }
-        .frame(width: geo.diameter, height: geo.diameter)
-        .scaleEffect(model.shown ? 1 : 0.55)
-        .rotationEffect(.degrees(model.shown ? 0 : -25))
+        // Bigger than the disc: scale/rotation/opacity render into a layer clipped to this frame,
+        // and the soft shadow needs room or it gets cut into a square.
+        .frame(width: geo.diameter * RingGeometry.canvasScale, height: geo.diameter * RingGeometry.canvasScale)
+        .scaleEffect(model.shown ? 1 : 0.86)
+        .rotationEffect(.degrees(model.shown ? 0 : -12))
         .opacity(model.shown ? 1 : 0)
-        .animation(theme.animated ? .spring(response: 0.32, dampingFraction: 0.72) : nil, value: model.shown)
+        .animation(theme.animated ? .spring(response: 0.2, dampingFraction: 0.78) : nil, value: model.shown)
         .animation(theme.animated ? .spring(response: 0.25, dampingFraction: 0.7) : nil, value: model.hovered)
         .animation(theme.animated ? .spring(response: 0.3, dampingFraction: 0.8) : nil, value: model.page)
         .environment(\.colorScheme, dark ? .dark : .light)

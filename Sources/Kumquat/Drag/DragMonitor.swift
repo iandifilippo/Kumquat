@@ -3,10 +3,13 @@ import AppKit
 /// Watches for file drags anywhere on the Mac and reports when the trigger key is pressed mid-drag.
 ///
 /// How it works, without Accessibility permission:
-/// - A global mouse monitor notices `leftMouseDragged`.
-/// - The system drag pasteboard's `changeCount` tells us a new drag started, and what it carries.
-/// - While a drag is active, a 60 Hz timer polls `NSEvent.modifierFlags` (allowed without permission)
-///   and `NSEvent.pressedMouseButtons` to see when the drag ends.
+/// - A global monitor notices the mouse button going down.
+/// - While it's held, a 60 Hz timer polls the system drag pasteboard (`changeCount` tells us a
+///   drag started and what it carries), `NSEvent.modifierFlags` (allowed without permission) and
+///   `NSEvent.pressedMouseButtons`.
+///
+/// Polling matters: once Finder's drag session begins, macOS stops sending `leftMouseDragged`
+/// to other apps, so waiting for those events made the ring show up late or not at all.
 final class DragMonitor {
     var onTriggerDown: (([URL]) -> Void)?
     var onTriggerUp: (() -> Void)?
@@ -28,18 +31,38 @@ final class DragMonitor {
     func start() {
         guard monitors.isEmpty else { return }
         if let m = NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDown, handler: { [weak self] _ in
-            guard let self else { return }
-            self.lastChangeCount = self.pasteboard.changeCount
+            self?.mouseDown()
         }) { monitors.append(m) }
+        // Dragged events still help when they do arrive (e.g. the first moves of a drag).
         if let m = NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDragged, handler: { [weak self] _ in
-            self?.checkForNewDrag()
+            guard let self else { return }
+            if self.timer == nil { self.startPolling() }
+            self.checkForNewDrag()
         }) { monitors.append(m) }
     }
 
     func stop() {
         monitors.forEach(NSEvent.removeMonitor)
         monitors.removeAll()
+        stopPolling()
         endDrag()
+    }
+
+    private func mouseDown() {
+        lastChangeCount = pasteboard.changeCount
+        startPolling()
+    }
+
+    private func startPolling() {
+        guard timer == nil else { return }
+        let t = Timer(timeInterval: 1.0 / 60, repeats: true) { [weak self] _ in self?.tick() }
+        RunLoop.main.add(t, forMode: .common)
+        timer = t
+    }
+
+    private func stopPolling() {
+        timer?.invalidate()
+        timer = nil
     }
 
     private func checkForNewDrag() {
@@ -51,9 +74,6 @@ final class DragMonitor {
         isDragging = true
         // If the key was already held when the drag started, wait for a fresh press.
         triggerWasDown = triggerIsDown
-        let t = Timer(timeInterval: 1.0 / 60, repeats: true) { [weak self] _ in self?.tick() }
-        RunLoop.main.add(t, forMode: .common)
-        timer = t
     }
 
     private var triggerIsDown: Bool {
@@ -62,7 +82,12 @@ final class DragMonitor {
 
     private func tick() {
         guard NSEvent.pressedMouseButtons & 1 == 1 else {
+            stopPolling()
             endDrag()
+            return
+        }
+        if !isDragging {
+            checkForNewDrag()
             return
         }
         let down = triggerIsDown
@@ -73,8 +98,6 @@ final class DragMonitor {
     }
 
     private func endDrag() {
-        timer?.invalidate()
-        timer = nil
         guard isDragging else { return }
         isDragging = false
         dragURLs = []

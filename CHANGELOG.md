@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.4 — 2026-10-18
+
+- ⇧ opens the ring instantly: Kumquat now watches the drag from the moment you press, instead of waiting for drag events macOS stops sending
+- The ring is truly round: the frosted glass is clipped to a circle and the shadow no longer gets cut into a square
+- Faster, snappier ring animation; the ring is prepared at launch
+
 ## 1.0.3 — 2026-10-18
 
 - "Update Now" button right in the update notification, and in Settings → About

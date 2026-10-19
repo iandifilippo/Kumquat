@@ -20,11 +20,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         NSUpdateDynamicServices()
         settings.applyLoginDefaultIfNeeded()
         WatchService.shared.start()
+        RingController.shared.prepare()
         Hotkey.shared.setEnabled(settings.hotkeyEnabled)
         UpdateChecker.shared.onChange = { [weak self] in self?.statusItem?.menu = self?.makeMenu() }
         UpdateChecker.shared.startAutomaticChecks()
 
-        if let i = CommandLine.arguments.firstIndex(of: "--self-test"), CommandLine.arguments.count > i + 1 {
+        if let i = CommandLine.arguments.firstIndex(of: "--capture-ring"), CommandLine.arguments.count > i + 2 {
+            // Debug: show the real ring and save a picture of its window (own windows need no permission).
+            let file = URL(fileURLWithPath: CommandLine.arguments[i + 1])
+            let out = URL(fileURLWithPath: CommandLine.arguments[i + 2])
+            RingController.shared.show(files: [file], at: NSPoint(x: 700, y: 500), mode: .drag)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                RingController.shared.captureWindow(to: out)
+                NSApp.terminate(nil)
+            }
+        } else if let i = CommandLine.arguments.firstIndex(of: "--self-test"), CommandLine.arguments.count > i + 1 {
             runSelfTest(file: URL(fileURLWithPath: CommandLine.arguments[i + 1]))
         } else if CommandLine.arguments.contains("--demo-ring") {
             let files = CommandLine.arguments.drop { $0 != "--demo-ring" }.dropFirst().map { URL(fileURLWithPath: $0) }

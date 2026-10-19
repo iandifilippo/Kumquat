@@ -42,15 +42,19 @@ struct GlassDisc: View {
     @ViewBuilder
     private var base: some View {
         switch theme.glass {
+        case .frosted where !theme.drawsBackdrop:
+            SwiftUI.Color.clear
         case .liquid:
             #if compiler(>=6.2)
             if #available(macOS 26.0, *) {
                 Circle().fill(.clear).glassEffect(.regular, in: Circle())
-            } else {
+            } else if theme.drawsBackdrop {
                 BlurView(material: dark ? .hudWindow : .popover, dark: dark)
+            } else {
+                SwiftUI.Color.clear
             }
             #else
-            BlurView(material: dark ? .hudWindow : .popover, dark: dark)
+            if theme.drawsBackdrop { BlurView(material: dark ? .hudWindow : .popover, dark: dark) } else { SwiftUI.Color.clear }
             #endif
         case .frosted:
             BlurView(material: dark ? .hudWindow : .popover, dark: dark)
@@ -75,6 +79,15 @@ struct GlassDisc: View {
 final class RoundBlurView: NSVisualEffectView {
     override func layout() {
         super.layout()
+        updateMask()
+    }
+
+    override func setFrameSize(_ newSize: NSSize) {
+        super.setFrameSize(newSize)
+        updateMask()
+    }
+
+    private func updateMask() {
         let size = bounds.size
         guard size.width > 0, maskImage?.size != size else { return }
         maskImage = NSImage(size: size, flipped: false) { rect in

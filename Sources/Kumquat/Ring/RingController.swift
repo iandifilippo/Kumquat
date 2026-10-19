@@ -14,7 +14,9 @@ private struct RingContainer: View {
     @ObservedObject var model: RingModel
 
     var body: some View {
-        RingView(model: model, theme: settings.theme)
+        var theme = settings.theme
+        theme.drawsBackdrop = false
+        return RingView(model: model, theme: theme)
     }
 }
 
@@ -25,10 +27,13 @@ final class RingController {
     let model = RingModel()
     private var panel: RingPanel?
     private var dropView: RingDropView?
+    /// The frosted glass, drawn by AppKit with a round mask (SwiftUI-hosted blur showed a square).
+    private let glass = RoundBlurView()
     private var hideWork: DispatchWorkItem?
     private var outsideClickMonitor: Any?
 
-    private let margin: CGFloat = 60
+    /// Room around the disc for the shadow and the hint pill.
+    private var margin: CGFloat { max(60, geometry.diameter * (RingGeometry.canvasScale - 1) / 2 + 10) }
     var isVisible: Bool { panel?.isVisible == true && model.shown }
 
     var geometry: RingGeometry { RingGeometry(diameter: SettingsStore.shared.ringSize) }
@@ -52,6 +57,7 @@ final class RingController {
             frame.origin.y = min(max(frame.minY, vf.minY), vf.maxY - side)
         }
         panel.setFrame(frame, display: false)
+        updateGlass()
         panel.allowsKey = mode == .click
         model.shown = false
         if mode == .click {
@@ -63,6 +69,10 @@ final class RingController {
             panel.orderFrontRegardless()
         }
         DispatchQueue.main.async { self.model.shown = true }
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = 0.16
+            glass.animator().alphaValue = 1
+        }
     }
 
     func hide(after delay: TimeInterval = 0) {
@@ -71,6 +81,10 @@ final class RingController {
             guard let self else { return }
             self.model.shown = false
             self.removeOutsideClickMonitor()
+            NSAnimationContext.runAnimationGroup { ctx in
+                ctx.duration = 0.15
+                self.glass.animator().alphaValue = 0
+            }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 if !self.model.shown {
                     self.panel?.orderOut(nil)
@@ -135,6 +149,62 @@ final class RingController {
         NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .now)
     }
 
+    /// Debug helper: saves what the ring window looks like on screen.
+    func captureWindow(to url: URL) {
+        guard let number = panel?.windowNumber,
+              let handle = dlopen(nil, RTLD_NOW),
+              let sym = dlsym(handle, "CGWindowListCreateImage") else { return }
+        typealias Fn = @convention(c) (CGRect, UInt32, UInt32, UInt32) -> Unmanaged<CGImage>?
+        let create = unsafeBitCast(sym, to: Fn.self)
+        // Include what's below the ring so the glass and its edges are visible as users see them.
+        guard let image = create(.null, 1 << 2 /* onScreenBelowWindow */ | 1 << 3 /* includingWindow */, UInt32(number), 1 << 0)?.takeRetainedValue() else { return }
+        let rep = NSBitmapImageRep(cgImage: image)
+        try? rep.representation(using: .png, properties: [:])?.write(to: url)
+    }
+
+    /// Builds the panel ahead of time so the first ⇧ shows the ring instantly.
+    func prepare() {
+        _ = makePanelIfNeeded()
+    }
+
+    private func updateGlass() {
+        let settings = SettingsStore.shared
+        let d = geometry.diameter
+        // Centered with constraints so it always sits exactly under the disc.
+        glass.removeConstraints(glass.constraints)
+        if let root = glass.superview {
+            glass.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.deactivate(root.constraints.filter { $0.firstItem === glass || $0.secondItem === glass })
+            NSLayoutConstraint.activate([
+                glass.centerXAnchor.constraint(equalTo: root.centerXAnchor),
+                glass.centerYAnchor.constraint(equalTo: root.centerYAnchor),
+                glass.widthAnchor.constraint(equalToConstant: d),
+                glass.heightAnchor.constraint(equalToConstant: d),
+            ])
+        }
+        // A rounded layer is what actually clips a behind-window blur to a circle here
+        // (maskImage is ignored in this transparent panel).
+        glass.wantsLayer = true
+        glass.layer?.cornerRadius = d / 2
+        glass.layer?.cornerCurve = .circular
+        glass.layer?.masksToBounds = true
+        let dark: Bool = {
+            switch settings.ringScheme {
+            case .dark: return true
+            case .light: return false
+            case .system: return NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            }
+        }()
+        var native = settings.glassStyle == .frosted
+        if settings.glassStyle == .liquid {
+            // Liquid Glass is drawn by SwiftUI on macOS 26; older systems fall back to frosted.
+            if #available(macOS 26.0, *) { native = false } else { native = true }
+        }
+        glass.isHidden = !native
+        glass.material = dark ? .hudWindow : .popover
+        glass.appearance = NSAppearance(named: dark ? .vibrantDark : .vibrantLight)
+    }
+
     private func makePanelIfNeeded() -> RingPanel {
         if let panel { return panel }
         let p = RingPanel(contentRect: .init(x: 0, y: 0, width: 400, height: 400),
@@ -150,6 +220,10 @@ final class RingController {
         p.animationBehavior = .none
 
         let root = NSView()
+        glass.blendingMode = .behindWindow
+        glass.state = .active
+        glass.alphaValue = 0
+        root.addSubview(glass)
         let host = NSHostingView(rootView: RingContainer(model: model))
         host.translatesAutoresizingMaskIntoConstraints = false
         let drop = RingDropView(controller: self)

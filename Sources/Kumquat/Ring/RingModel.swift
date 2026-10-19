@@ -54,6 +54,8 @@ final class RingModel: ObservableObject {
 /// Ring measurements, shared by drawing and hit testing.
 struct RingGeometry {
     let diameter: CGFloat
+    /// The ring's drawing canvas relative to the disc, leaving room for its shadow.
+    static let canvasScale: CGFloat = 1.34
 
     var outerRadius: CGFloat { diameter / 2 }
     var hubRadius: CGFloat { diameter * 0.19 }

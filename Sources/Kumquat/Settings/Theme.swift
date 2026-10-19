@@ -31,6 +31,8 @@ struct Theme {
     var size: Double
     var labels: LabelStyle
     var scheme: RingScheme
+    /// False in the live ring, where the window draws the frosted blur itself (with a true round mask).
+    var drawsBackdrop = true
 
     var gradient: LinearGradient {
         LinearGradient(colors: [accent, accent2], startPoint: .topLeading, endPoint: .bottomTrailing)
