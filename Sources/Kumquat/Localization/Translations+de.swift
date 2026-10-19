@@ -354,5 +354,6 @@ extension Translations {
         "Check Now": "Jetzt suchen",
         "Free and open source under the MIT license. Files never leave your Mac: no accounts, no uploads, no tracking. The only network request is this update check, which asks GitHub for the latest version.":
             "Kostenlos und Open Source unter der MIT-Lizenz. Ihre Dateien verlassen nie Ihren Mac: keine Accounts, keine Uploads, kein Tracking. Die einzige Netzwerkanfrage ist diese Update-Suche, die GitHub nach der neuesten Version fragt.",
+        "Update Now": "Jetzt aktualisieren",
     ]
 }

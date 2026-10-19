@@ -2,14 +2,14 @@ import AppKit
 
 /// Asks GitHub whether a newer release exists. This is Kumquat's only network request,
 /// and it can be turned off in Settings → About.
-final class UpdateChecker {
+final class UpdateChecker: ObservableObject {
     static let shared = UpdateChecker()
     static let releasesURL = URL(string: "https://github.com/iandifilippo/Kumquat/releases/latest")!
     private let api = URL(string: "https://api.github.com/repos/iandifilippo/Kumquat/releases/latest")!
     private var timer: Timer?
 
     /// The newer version, once found.
-    private(set) var available: String?
+    @Published private(set) var available: String?
     var onChange: (() -> Void)?
 
     var current: String { Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0" }
@@ -34,7 +34,8 @@ final class UpdateChecker {
                     self.available = latest
                     self.onChange?()
                     if isNew || userInitiated {
-                        ToastCenter.shared.showInfo(L("Kumquat %@ is available", latest), detail: L("Open the menu bar icon to update."))
+                        ToastCenter.shared.showInfo(L("Kumquat %@ is available", latest), detail: nil,
+                                                    actionTitle: L("Update Now")) { self.installUpdate() }
                     }
                 } else if userInitiated {
                     ToastCenter.shared.showInfo(L("You're up to date"), detail: L("Kumquat %@ is the latest version.", self.current))
@@ -52,22 +53,29 @@ final class UpdateChecker {
         return false
     }
 
-    /// Updates in place with the same script the README recommends.
+    /// Updates in place: a small helper waits for Kumquat to quit, runs the install script
+    /// (which replaces the app and opens the new one), and Kumquat quits right away.
     func installUpdate() {
-        let command = "curl -fsSL https://raw.githubusercontent.com/iandifilippo/Kumquat/main/install.sh | bash"
+        let pid = ProcessInfo.processInfo.processIdentifier
+        let script = """
+        while kill -0 \(pid) 2>/dev/null; do sleep 0.2; done
+        curl -fsSL https://raw.githubusercontent.com/iandifilippo/Kumquat/main/install.sh | KUMQUAT_UPDATING=1 bash \
+          || open "\(Self.releasesURL.absoluteString)"
+        """
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/bash")
-        process.arguments = ["-c", command]
-        ToastCenter.shared.showProgress(title: L("Updating Kumquat…"), total: 1)
-        process.terminationHandler = { p in
-            DispatchQueue.main.async {
-                if p.terminationStatus != 0 {
-                    ToastCenter.shared.showFailure(L("Couldn't update"), detail: L("Download it from GitHub instead."))
-                    NSWorkspace.shared.open(Self.releasesURL)
-                }
-                // On success the script quits this copy and opens the new one.
-            }
+        process.arguments = ["-c", script]
+        // Detach from Kumquat so the helper outlives it.
+        process.standardInput = FileHandle.nullDevice
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+        do {
+            try process.run()
+        } catch {
+            NSWorkspace.shared.open(Self.releasesURL)
+            return
         }
-        try? process.run()
+        ToastCenter.shared.showProgress(title: L("Updating Kumquat…"), total: 1)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { NSApp.terminate(nil) }
     }
 }

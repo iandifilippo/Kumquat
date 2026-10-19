@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.3 — 2026-10-18
+
+- "Update Now" button right in the update notification, and in Settings → About
+- Updating from the app is more reliable: Kumquat quits, gets replaced and reopens by itself
+
 ## 1.0.2 — 2026-10-18
 
 - The ring is a perfect circle: no more faint square or line around it

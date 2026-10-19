@@ -20,8 +20,11 @@ trap 'rm -rf "$TMP"' EXIT
 curl -fsSL "$URL" -o "$TMP/Kumquat.zip"
 ditto -x -k "$TMP/Kumquat.zip" "$TMP"
 
-# Quit a running copy before replacing it.
-osascript -e 'quit app "Kumquat"' >/dev/null 2>&1 || true
+# Quit a running copy before replacing it (the app already quit itself when updating from its menu).
+if [[ -z "${KUMQUAT_UPDATING:-}" ]]; then
+  osascript -e 'quit app "Kumquat"' >/dev/null 2>&1 || true
+  sleep 1
+fi
 mkdir -p "$DEST"
 rm -rf "$DEST/Kumquat.app"
 ditto "$TMP/Kumquat.app" "$DEST/Kumquat.app"

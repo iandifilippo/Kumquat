@@ -337,5 +337,6 @@ extension Translations {
         "Check for updates automatically": "자동으로 업데이트 확인",
         "Check Now": "지금 확인",
         "Free and open source under the MIT license. Files never leave your Mac: no accounts, no uploads, no tracking. The only network request is this update check, which asks GitHub for the latest version.": "MIT 라이선스의 무료 오픈 소스입니다. 파일은 절대 Mac 밖으로 나가지 않습니다. 계정도, 업로드도, 추적도 없습니다. 유일한 네트워크 요청은 GitHub에 최신 버전을 확인하는 이 업데이트 확인뿐입니다.",
+        "Update Now": "지금 업데이트",
     ]
 }

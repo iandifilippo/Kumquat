@@ -17,6 +17,9 @@ final class ToastModel: ObservableObject, @unchecked Sendable {
     @Published var visible = false
     var originals: [URL] = []
     var trashed: [URL] = []
+    /// An optional button on info toasts, e.g. "Update Now".
+    @Published var actionTitle: String?
+    var action: (() -> Void)?
 
     func progress(done: Int, total: Int) {
         self.done = done
@@ -50,6 +53,7 @@ final class ToastCenter {
 
     func showSuccess(_ outcome: ActionOutcome, detail: String, originals: [URL], trashedOriginals: [URL]) {
         model.kind = .success
+        model.actionTitle = nil
         model.outputs = outcome.outputs
         model.originals = originals
         model.trashed = trashedOriginals
@@ -67,6 +71,7 @@ final class ToastCenter {
 
     func showFailure(_ title: String, detail: String?) {
         model.kind = .failure
+        model.actionTitle = nil
         model.title = title
         model.detail = detail
         model.outputs = []
@@ -75,15 +80,19 @@ final class ToastCenter {
         scheduleDismiss(extra: 2)
     }
 
-    func showInfo(_ title: String, detail: String?) {
+    func showInfo(_ title: String, detail: String?, actionTitle: String? = nil, action: (() -> Void)? = nil) {
         model.kind = .info
         model.title = title
         model.detail = detail
         model.outputs = []
         model.thumbnail = nil
+        model.actionTitle = actionTitle
+        model.action = action
         present()
-        scheduleDismiss()
+        // A toast with a button stays longer so there's time to click it.
+        scheduleDismiss(extra: actionTitle == nil ? 0 : 10)
     }
+
 
     func dismiss() {
         dismissWork?.cancel()
@@ -182,6 +191,13 @@ struct ToastView: View {
                         Text(detail).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(2)
                     }
                     if model.kind == .success { actions(theme) }
+                    if model.kind == .info, let title = model.actionTitle {
+                        pill(title, theme, filled: true) {
+                            center.dismiss()
+                            model.action?()
+                        }
+                        .padding(.top, 2)
+                    }
                 }
             }
         }

@@ -570,6 +570,7 @@ private struct QualityPane: View {
 
 private struct AboutPane: View {
     @EnvironmentObject var settings: SettingsStore
+    @ObservedObject private var updates = UpdateChecker.shared
     private var version: String {
         (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "dev"
     }
@@ -581,6 +582,18 @@ private struct AboutPane: View {
                     AppIconView().frame(width: 88, height: 88)
                     Text("Kumquat").font(.system(size: 24, weight: .bold, design: .rounded))
                     Text(L("Version %@", version)).foregroundStyle(.secondary)
+                    if let latest = updates.available {
+                        Button {
+                            updates.installUpdate()
+                        } label: {
+                            Label(L("Update to Kumquat %@…", latest), systemImage: "arrow.down.circle.fill")
+                                .font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+                                .padding(.horizontal, 14).padding(.vertical, 6)
+                                .background(Capsule().fill(settings.theme.gradient))
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, 4)
+                    }
                     Text(L("Drag a file, tap ⇧, drop. Convert anything without opening an app."))
                         .multilineTextAlignment(.center).foregroundStyle(.secondary)
                     HStack {

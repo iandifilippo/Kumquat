@@ -356,5 +356,6 @@ enum Translations {
         "Check Now": "Buscar ahora",
         "Free and open source under the MIT license. Files never leave your Mac: no accounts, no uploads, no tracking. The only network request is this update check, which asks GitHub for the latest version.":
             "Gratis y de código abierto con licencia MIT. Tus archivos nunca salen de tu Mac: sin cuentas, sin subidas, sin rastreo. La única conexión es esta búsqueda de actualizaciones, que pregunta a GitHub por la última versión.",
+        "Update Now": "Actualizar ahora",
     ]
 }
