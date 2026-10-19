@@ -2,6 +2,7 @@
 # Installs or updates Kumquat from the latest GitHub release.
 #   curl -fsSL https://raw.githubusercontent.com/iandifilippo/Kumquat/main/install.sh | bash
 set -euo pipefail
+trap "" HUP
 
 REPO="iandifilippo/Kumquat"
 DEST="/Applications"
@@ -26,8 +27,12 @@ if [[ -z "${KUMQUAT_UPDATING:-}" ]]; then
   sleep 1
 fi
 mkdir -p "$DEST"
-rm -rf "$DEST/Kumquat.app"
-ditto "$TMP/Kumquat.app" "$DEST/Kumquat.app"
+# Copy first, swap at the end: if anything stops halfway, the old app is still there.
+ditto "$TMP/Kumquat.app" "$DEST/.Kumquat-new.app"
+rm -rf "$DEST/.Kumquat-old.app"
+[[ -d "$DEST/Kumquat.app" ]] && mv "$DEST/Kumquat.app" "$DEST/.Kumquat-old.app"
+mv "$DEST/.Kumquat-new.app" "$DEST/Kumquat.app"
+rm -rf "$DEST/.Kumquat-old.app"
 # Downloaded with curl, so there is no quarantine flag; clear it anyway in case.
 xattr -dr com.apple.quarantine "$DEST/Kumquat.app" 2>/dev/null || true
 
