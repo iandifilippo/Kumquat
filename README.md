@@ -26,6 +26,10 @@ Images, PDFs, documents, video and audio, converted and edited without opening a
 
 <img src="docs/assets/hero.jpg" alt="Dragging a HEIC photo on the Mac desktop; a glass ring of formats opens under the cursor and the JPG slice is highlighted" width="1000" />
 
+<br/>
+
+<img src="docs/assets/demo.gif" alt="Kumquat demo: dragging a file on the Mac desktop" width="1000" />
+
 </div>
 
 ---
